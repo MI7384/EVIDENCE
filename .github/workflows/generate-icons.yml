@@ -1,0 +1,33 @@
+name: Generate Android PNG icons
+on:
+  push:
+    paths:
+      - '.github/workflows/generate-icons.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  icons:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m pip install --quiet pillow
+      - name: Render crisp PNG icons
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageDraw, ImageFont
+          for size in (192,512):
+              scale=3
+              im=Image.new('RGB',(size*scale,size*scale),'white')
+              draw=ImageDraw.Draw(im)
+              font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',round(116*size/512*scale))
+              for txt,x,y in [('e',112,40),('vi',112,149),('den',112,258),('ce',250,367)]:
+                  draw.text((round(x*size/512*scale),round(y*size/512*scale)),txt,font=font,fill='#111')
+              im.resize((size,size),Image.Resampling.LANCZOS).save(f'icon-{size}.png',optimize=True)
+          PY
+      - name: Commit PNG files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add icon-192.png icon-512.png
+          git diff --cached --quiet || (git commit -m "Generate crisp Android PNG icons" && git push)
