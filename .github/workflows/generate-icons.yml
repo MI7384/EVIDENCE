@@ -12,19 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: python -m pip install --quiet pillow
-      - name: Render crisp PNG icons
+      - run: python -m pip install --quiet cairosvg pillow
+      - name: Render PNG icons from approved SVG
         run: |
           python - <<'PY'
-          from PIL import Image, ImageDraw, ImageFont
+          import cairosvg
           for size in (192,512):
-              scale=3
-              im=Image.new('RGB',(size*scale,size*scale),'white')
-              draw=ImageDraw.Draw(im)
-              font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',round(116*size/512*scale))
-              for txt,x,y in [('e',112,40),('vi',112,149),('den',112,258),('ce',112,367)]:
-                  draw.text((round(x*size/512*scale),round(y*size/512*scale)),txt,font=font,fill='#193D63')
-              im.resize((size,size),Image.Resampling.LANCZOS).save(f'icon-{size}.png',optimize=True)
+              cairosvg.svg2png(url='icon.svg',write_to=f'icon-{size}.png',output_width=size,output_height=size)
           PY
       - name: Commit PNG files
         run: |
