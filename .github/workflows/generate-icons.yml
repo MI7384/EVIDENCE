@@ -20,9 +20,16 @@ jobs:
           for size in (192,512):
               cairosvg.svg2png(url='icon.svg',write_to=f'icon-{size}.png',output_width=size,output_height=size)
           PY
-      - name: Commit PNG files
+      - name: Bundle PDF libraries locally
+        run: |
+          mkdir -p vendor
+          curl --fail --location --retry 3 --silent --show-error 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js' -o vendor/html2canvas.min.js || curl --fail --location --retry 3 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js' -o vendor/html2canvas.min.js
+          curl --fail --location --retry 3 --silent --show-error 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js' -o vendor/jspdf.umd.min.js || curl --fail --location --retry 3 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js' -o vendor/jspdf.umd.min.js
+          test "$(wc -c < vendor/html2canvas.min.js)" -gt 100000
+          test "$(wc -c < vendor/jspdf.umd.min.js)" -gt 100000
+      - name: Commit PNG files and local PDF libraries
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add icon-192.png icon-512.png
+          git add icon-192.png icon-512.png vendor/html2canvas.min.js vendor/jspdf.umd.min.js
           git diff --cached --quiet || (git commit -m "Generate crisp Android PNG icons" && git push)
