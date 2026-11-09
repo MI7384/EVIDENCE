@@ -20,17 +20,9 @@ jobs:
           for size in (192,512):
               cairosvg.svg2png(url='icon.svg',write_to=f'icon-{size}.png',output_width=size,output_height=size)
           PY
-      - name: Bundle PDF libraries locally
-        run: |
-          npm install --no-save --ignore-scripts html2canvas@1.4.1 jspdf@2.5.2
-          mkdir -p vendor
-          cp node_modules/html2canvas/dist/html2canvas.min.js vendor/html2canvas.min.js
-          cp node_modules/jspdf/dist/jspdf.umd.min.js vendor/jspdf.umd.min.js
-          test "$(wc -c < vendor/html2canvas.min.js)" -gt 100000
-          test "$(wc -c < vendor/jspdf.umd.min.js)" -gt 100000
       - name: Commit PNG files and local PDF libraries
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add icon-192.png icon-512.png vendor/html2canvas.min.js vendor/jspdf.umd.min.js
-          git diff --cached --quiet || (git commit -m "Generate crisp Android PNG icons" && git push)
+          git add icon-192.png icon-512.png
+          git diff --cached --quiet || (git commit -m "Regenerate Android icons from current SVG" && git push)
