@@ -628,7 +628,7 @@ async function appendGroupedPdf(pdf,i,section,withPhotos=true){
  const x=get(i);if(!x)return;const groups=[];const add=r=>groups.push({record:r,photos:picsFor(r.id)});
  if(['note','truck','item'].includes(x.type))add(x);
  else if(x.type==='sheet')for(const r of children(i,'item'))add(r);
- else if(x.type==='action'){if(['packedIn','packedOut','loading'].includes(section))groups.push({record:{name:sectionName(section),note:''},photos:picsFor('fair-section-'+i+'-'+section)});for(const sh of children(i,'sheet').filter(sh=>section===null||sectionOf(sh)===section))for(const r of children(sh.id,'item'))add(r)}
+ else if(x.type==='action'){if(section==='notes'){for(const id of notesExportIds(i)){const note=get(id);if(note&&note.type==='note')add(note)}}if(['packedIn','packedOut','loading'].includes(section))groups.push({record:{name:sectionName(section),note:''},photos:picsFor('fair-section-'+i+'-'+section)});for(const sh of children(i,'sheet').filter(sh=>section===null||sectionOf(sh)===section))for(const r of children(sh.id,'item'))add(r)}
  let fair=x;for(let n=0;n<4&&fair&&fair.type!=='action';n++)fair=get(fair.parent);
  const pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight(),margin=13,maxW=pw-2*margin,bottom=ph-13;let y=12;
  const nextPage=()=>{pdf.addPage();y=13};
