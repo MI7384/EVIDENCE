@@ -974,7 +974,7 @@ function pdfThemePalette(){
 }
 function themedPdfStyles(){
  const p=pdfThemePalette();
- return pdfStyles+` .pdf-brand{background:${p.dark}!important;border-bottom-color:${p.accent}!important}.pdf-fair{border-left-color:${p.accent}!important;background:${p.light}!important;color:${p.ink}!important}.pdf-fair h2,h1,h2,h3{color:${p.ink}}th{background:${p.dark}!important}`;
+ return pdfStyles+` .pdf-brand{background:${p.dark}!important;border-bottom-color:${p.accent}!important}.pdf-fair{border-left-color:${p.accent}!important;background:${p.light}!important;color:${p.ink}!important}.pdf-fair h2{color:${p.ink}!important}h1{background:${p.dark}!important;color:#fff!important}h2,h3{color:${p.ink}!important}th{background:${p.dark}!important;color:#fff!important}`;
 }
 async function appendGroupedPdf(pdf,i,section,withPhotos=true){
  const x=get(i);if(!x)return;const palette=pdfThemePalette();const groups=[];const add=r=>groups.push({record:r,photos:picsFor(r.id)});
