@@ -516,6 +516,41 @@ html[data-evidence-theme="green"] input:focus,html[data-evidence-theme="green"] 
 html[data-evidence-theme="green"] .notice-heading{background:#236344!important}
 html[data-evidence-theme="green"] .brand-check path{stroke:#3ee59a!important}
 html[data-evidence-theme="green"] .export-polished button.export-primary{background:#236344!important;border-color:#236344!important}
+
+/* Complete green palette for fair overview: overlays, captions, icons and dates. */
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-tile-storage .tile-open::before,
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-tile-notes .tile-open::before{
+ background:linear-gradient(90deg,rgba(8,51,32,.16),rgba(7,47,29,.95) 75%)!important
+}
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-tile-packedIn .tile-name,
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-tile-loading .tile-name{
+ background:linear-gradient(125deg,#0a422d,#176b45)!important
+}
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-tile .tile-divider{
+ background:#31d28b!important
+}
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-dates span{
+ background:#d9f0e2!important;color:#174c32!important
+}
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-info svg,
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-info .fair-icon{
+ color:#226547!important;stroke:#226547!important
+}
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-info h2::before,
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-info .accent{
+ background:#32c987!important;border-color:#32c987!important
+}
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-toolbar button{
+ background:linear-gradient(#fff,#e4f2e8)!important;
+ color:#183d2a!important;border-color:#bad5c4!important
+}
+html[data-evidence-theme="green"] body:has(.fair-tiles){background:#eef5ef!important}
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-tile-storage .tile-open::after,
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-tile-notes .tile-open::after,
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-tile-packedIn .tile-open::after,
+html[data-evidence-theme="green"] body:has(.fair-tiles) .fair-tile-loading .tile-open::after{
+ color:#fff!important
+}
 </style><script>try{const t=localStorage.getItem('evidence-color-theme');if(t==='green')document.documentElement.dataset.evidenceTheme='green'}catch(e){}</script></head><body><div id="launchSplash" aria-label="Spouští se evidence" hidden><img src="icon.svg?v=6" alt="evidence" width="220" height="220"></div><header><div class="brand"><svg class="brand-check" viewBox="0 0 100 100" aria-hidden="true"><path d="M16 53 L37 74 L83 22" fill="none" stroke="#00bff2" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>evidence</strong></div></header><main id="app"></main><div id="confirmOverlay" class="confirm-overlay" hidden><div class="confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><h3 id="confirmTitle">Potvrzení</h3><p id="confirmMessage"></p><div class="confirm-actions"><button type="button" class="secondary" id="confirmCancel">Zrušit</button><button type="button" class="danger" id="confirmAccept">Smazat</button></div></div></div><div id="noticeOverlay" class="notice-overlay" hidden><div class="notice-card" role="alertdialog" aria-modal="true" aria-labelledby="noticeTitle" aria-describedby="noticeMessage"><div id="noticeTitle" class="notice-heading">evidence</div><div class="notice-content"><span class="notice-icon" aria-hidden="true">i</span><span id="noticeMessage" class="notice-message"></span></div><div class="notice-actions"><button type="button" id="noticeOk">OK</button></div></div></div><div id="shipperPicker" class="picker-overlay" hidden><div class="picker-panel" role="dialog" aria-modal="true" aria-label="Výběr spedice"><h3>Vyber spedici</h3><div id="shipperChoices"></div><button class="secondary" type="button" onclick="closeShipperPicker()">Zrušit</button></div></div><div id="viewer" class="viewer" role="dialog" aria-modal="true" aria-label="Prohlížení fotografií"><img id="big" alt="Zvětšená fotografie"><div id="photoCount" style="color:white;font-size:13px;margin-top:10px"></div><div class="buttons"><button onclick="closePhoto()">Zavřít</button></div></div><div id="cameraView" class="viewer" style="z-index:1100"><video id="cameraVideo" autoplay playsinline muted style="width:100%;max-height:72vh;object-fit:contain"></video><div class="buttons"><button type="button" onclick="takeCameraPhoto()">📸 Vyfotit</button><button type="button" onclick="closeCamera()">Zavřít</button></div><p id="cameraMessage" style="color:white;font-size:14px;text-align:center"></p></div><script>
 function setEvidenceTheme(theme){const value=theme==='green'?'green':'blue';document.documentElement.dataset.evidenceTheme=value;try{localStorage.setItem('evidence-color-theme',value)}catch(e){}const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=value==='green'?'#246340':'#193D63'}
 const splashEl=document.getElementById('launchSplash');if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true){splashEl.hidden=false;setTimeout(()=>{splashEl.classList.add('hide');setTimeout(()=>splashEl.remove(),300)},2000)}else{splashEl.remove()}
