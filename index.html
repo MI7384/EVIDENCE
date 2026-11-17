@@ -934,8 +934,16 @@ function showPreparedPdf(file,itemName){
 function pdfPhotoEntries(i,section){const x=get(i);if(!x)return [];const entries=[];const add=(id,label)=>{for(const p of picsFor(id))if(p.data)entries.push({data:p.data,label})};if(x.type==='note'||x.type==='truck'||x.type==='item'){add(i,x.name)}else if(x.type==='sheet'){for(const r of children(i,'item'))add(r.id,r.name)}else if(x.type==='action'){if(section==='notes')for(const id of notesExportIds(i)){const n=get(id);if(n)add(n)}if(['packedIn','packedOut','loading'].includes(section))add('fair-section-'+i+'-'+section,sectionName(section));for(const sh of children(i,'sheet').filter(sh=>section===null||sectionOf(sh)===section))for(const r of children(sh.id,'item'))add(r.id,r.name)}return entries}
 async function pdfOptimizedPhoto(data){return await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{let canvas;try{const maxSide=1500,scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));const ctx=canvas.getContext('2d',{alpha:false});if(!ctx)throw Error('Nelze zpracovat fotografii');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);const compressed=canvas.toDataURL('image/jpeg',0.76);resolve({data:compressed,width:canvas.width,height:canvas.height})}catch(e){reject(e)}finally{if(canvas){canvas.width=0;canvas.height=0}img.src=''}};img.onerror=()=>reject(new Error('Fotografii nelze načíst'));img.src=data})}
 async function appendOriginalPdfPhotos(pdf,entries){const pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight();for(let j=0;j<entries.length;j++){const p=entries[j];const photo=await pdfOptimizedPhoto(p.data);pdf.addPage();pdf.setFillColor(255,255,255);pdf.rect(0,0,pw,ph,'F');pdf.setFont('helvetica','bold');pdf.setFontSize(12);pdf.setTextColor(25,61,99);pdf.text('Fotografie '+(j+1)+' / '+entries.length,13,17);const availableW=pw-26,availableH=ph-42;const ratio=Math.min(availableW/photo.width,availableH/photo.height);const w=photo.width*ratio,h=photo.height*ratio;pdf.addImage(photo.data,'JPEG',(pw-w)/2,26,w,h,undefined,'FAST');if(j%3===2)await new Promise(r=>setTimeout(r,0))}}
+function pdfThemePalette(){
+ const green=document.documentElement.dataset.evidenceTheme==='green';
+ return green?{dark:'#103d2a',mid:'#236a46',accent:'#32d787',light:'#e7f4eb',ink:'#174b32'}:{dark:'#082d49',mid:'#164d70',accent:'#00b9e9',light:'#f3f7fb',ink:'#0c2d49'};
+}
+function themedPdfStyles(){
+ const p=pdfThemePalette();
+ return pdfStyles+` .pdf-brand{background:${p.dark}!important;border-bottom-color:${p.accent}!important}.pdf-fair{border-left-color:${p.accent}!important;background:${p.light}!important;color:${p.ink}!important}.pdf-fair h2,h1,h2,h3{color:${p.ink}}th{background:${p.dark}!important}`;
+}
 async function appendGroupedPdf(pdf,i,section,withPhotos=true){
- const x=get(i);if(!x)return;const groups=[];const add=r=>groups.push({record:r,photos:picsFor(r.id)});
+ const x=get(i);if(!x)return;const palette=pdfThemePalette();const groups=[];const add=r=>groups.push({record:r,photos:picsFor(r.id)});
  if(['note','truck','item'].includes(x.type))add(x);
  else if(x.type==='sheet')for(const r of children(i,'item'))add(r);
  else if(x.type==='action'){if(section==='notes'){for(const id of notesExportIds(i)){const note=get(id);if(note&&note.type==='note')add(note)}}if(['packedIn','packedOut','loading'].includes(section))groups.push({record:{name:sectionName(section),note:''},photos:picsFor('fair-section-'+i+'-'+section)});for(const sh of children(i,'sheet').filter(sh=>section===null||sectionOf(sh)===section))for(const r of children(sh.id,'item'))add(r)}
@@ -944,17 +952,17 @@ async function appendGroupedPdf(pdf,i,section,withPhotos=true){
  const nextPage=()=>{pdf.addPage();y=13};
  const block=async(html,extraClass='',keepWith=0)=>{const el=document.createElement('div');el.style.cssText='position:fixed;left:-10000px;top:0;width:690px;box-sizing:border-box;padding:20px 23px;background:white;color:#15344e;font:17px Arial,sans-serif;overflow-wrap:anywhere;white-space:normal;line-height:1.4;';el.className=extraClass;el.innerHTML=html;document.body.appendChild(el);try{const canvas=await html2canvas(el,{scale:1.8,backgroundColor:'#fff',logging:false});const h=canvas.height*maxW/canvas.width;if(h>bottom-13)throw Error('Textový blok je příliš dlouhý pro jednu stránku');if(y+h+keepWith>bottom)nextPage();pdf.addImage(canvas.toDataURL('image/jpeg',.88),'JPEG',margin,y,maxW,h,undefined,'FAST');y+=h+3;canvas.width=0;canvas.height=0}finally{el.remove()}};
  const line=(label,val)=>'<div style="margin:5px 0"><b>'+label+':</b> '+safe(val||'–')+'</div>';
- await block('<div style="background:linear-gradient(110deg,#082d49,#164d70);color:white;padding:19px 23px;font-size:29px;font-weight:bold;border-bottom:6px solid #00b9e9">✓ evidence</div><div style="padding:16px 4px 0"><h1 style="font-size:27px;margin:0 0 9px">'+safe(fair?.name||x.name)+'</h1>'+(fair?.type==='action'?line('Místo',fair.place)+line('Název stánku',fair.standName)+line('Hala',fair.hall)+line('Číslo stánku',fair.standNumber)+line('Montáž',dateRange(fair.mountFrom,fair.mountTo))+line('Průběh veletrhu',dateRange(fair.fairFrom,fair.fairTo))+line('Demontáž',dateRange(fair.dismountFrom,fair.dismountTo)):'')+'</div>');
- await block('<div style="font-size:22px;font-weight:bold;border-left:6px solid #00b9e9;padding-left:12px">'+safe(section?sectionName(section):x.type==='sheet'?x.name:'Evidence položek')+'</div>');
+ await block('<div style="background:linear-gradient(110deg,'+palette.dark+','+palette.mid+');color:white;padding:19px 23px;font-size:29px;font-weight:bold;border-bottom:6px solid '+palette.accent+'">✓ evidence</div><div style="padding:16px 4px 0"><h1 style="font-size:27px;margin:0 0 9px">'+safe(fair?.name||x.name)+'</h1>'+(fair?.type==='action'?line('Místo',fair.place)+line('Název stánku',fair.standName)+line('Hala',fair.hall)+line('Číslo stánku',fair.standNumber)+line('Montáž',dateRange(fair.mountFrom,fair.mountTo))+line('Průběh veletrhu',dateRange(fair.fairFrom,fair.fairTo))+line('Demontáž',dateRange(fair.dismountFrom,fair.dismountTo)):'')+'</div>');
+ await block('<div style="font-size:22px;font-weight:bold;border-left:6px solid '+palette.accent+';padding-left:12px">'+safe(section?sectionName(section):x.type==='sheet'?x.name:'Evidence položek')+'</div>');
  for(const group of groups){
   const r=group.record;
   const dims=r.type==='item'?line('Rozměry (cm)',[r.l,r.w,r.h].join(' × '))+line('Objem',fmt(volume(r))+' m³'):'';
   const notes=r.note?'<div style="white-space:pre-wrap;margin-top:9px"><b>Poznámka:</b> '+safe(r.note)+'</div>':'';
   const photos=withPhotos?group.photos.filter(p=>p.data):[];
   // Two compact photos per row. Preprocess one row at a time to limit memory use.
-  const thumbW=(maxW-5)/2,thumbMaxH=64;
-  const firstPhotoSpace=photos.length?thumbMaxH+7:0;
-  await block('<div style="border:1px solid #d8e5f0;border-left:6px solid #00b9e9;border-radius:12px;padding:15px;background:#f3f7fb"><div style="font-size:22px;font-weight:bold;color:#0c2d49;margin-bottom:8px">'+safe(r.name||'Položka')+'</div>'+dims+notes+'</div>','',firstPhotoSpace);
+  const thumbW=(maxW-5)/2,thumbMaxH=54;
+  const firstPhotoSpace=photos.length?34:0;
+  await block('<div style="border:1px solid #d8e5f0;border-left:6px solid '+palette.accent+';border-radius:12px;padding:15px;background:'+palette.light+'"><div style="font-size:22px;font-weight:bold;color:'+palette.ink+';margin-bottom:8px">'+safe(r.name||'Položka')+'</div>'+dims+notes+'</div>','',firstPhotoSpace);
   for(let k=0;k<photos.length;k+=2){
    const row=[];
    for(const p of photos.slice(k,k+2)){
@@ -985,7 +993,7 @@ async function sharePdf(i,withPhotos,section=null){
   }else{
    container=document.createElement('div');
    container.style.cssText='position:fixed;left:-10000px;top:0;width:695px;background:white;z-index:-1';
-   container.innerHTML='<style>'+pdfStyles+'</style><div class="pdf-body" style="background:white;width:695px;padding:0">'+pdfHtml(i,false,section)+'</div>';
+   container.innerHTML='<style>'+themedPdfStyles()+'</style><div class="pdf-body" style="background:white;width:695px;padding:0">'+pdfHtml(i,false,section)+'</div>';
    document.body.appendChild(container);
    const element=container.querySelector('.pdf-body');
    const canvas=await html2canvas(element,{scale:1.4,backgroundColor:'#ffffff',useCORS:true,logging:false});
